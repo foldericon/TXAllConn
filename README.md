@@ -9,7 +9,7 @@ Requirements
 ------------
 
 - [Xcode 5](https://itunes.apple.com/de/app/xcode/id497799835)
-- [Textual 4.2](https://github.com/codeux/Textual)
+- [Textual 4.x](https://github.com/codeux/Textual)
 
 
 Instructions
