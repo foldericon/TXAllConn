@@ -40,8 +40,20 @@
 				  message:(NSString *)messageString
 				  command:(NSString *)commandString
 {
-    for (IRCClient *cl in self.worldController.clients){
-        [cl sendCommand:messageString];
+    NSArray *argsAry = [messageString componentsSeparatedByString:@" "];
+    NSString *cmd = [[argsAry subarrayWithRange:NSMakeRange(1, argsAry.count-1)] componentsJoinedByString:@" "];
+    if([[argsAry objectAtIndex:0] isEqualToString:@"-a"] && argsAry.count > 1) {
+        for (IRCClient *cl in self.worldController.clients) {
+            [cl sendCommand:cmd];
+        }
+    } else if([[argsAry objectAtIndex:0] length] == 5 && argsAry.count > 1) {
+        for (IRCClient *cl in self.worldController.clients) {
+            if([cl.uniqueIdentifier hasPrefix:[argsAry objectAtIndex:0]]) {
+                [cl sendCommand:cmd];
+            }
+        }
+    } else {
+        [client sendCommand:@"DEBUG USAGE: /allconn <-a|ID> <command>"];
     }
 }
 
