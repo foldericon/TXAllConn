@@ -33,10 +33,10 @@
 
 @interface TPIAllConn : NSObject
 
-- (void)messageSentByUser:(IRCClient *)client
-				  message:(NSString *)messageString
-				  command:(NSString *)commandString;
+- (void)userInputCommandInvokedOnClient:(IRCClient *)client
+                          commandString:(NSString *)commandString
+                          messageString:(NSString *)messageString;
 
-- (NSArray *)pluginSupportsUserInputCommands;
+- (NSArray *)subscribedUserInputCommands;
 
 @end

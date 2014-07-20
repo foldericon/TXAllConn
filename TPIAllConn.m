@@ -36,28 +36,50 @@
 #pragma mark -
 #pragma mark User Input
 
-- (void)messageSentByUser:(IRCClient *)client
-				  message:(NSString *)messageString
-				  command:(NSString *)commandString
+- (void)userInputCommandInvokedOnClient:(IRCClient *)client
+                          commandString:(NSString *)commandString
+                          messageString:(NSString *)messageString
 {
     NSArray *argsAry = [messageString componentsSeparatedByString:@" "];
     NSString *cmd = [[argsAry subarrayWithRange:NSMakeRange(1, argsAry.count-1)] componentsJoinedByString:@" "];
     if([[argsAry objectAtIndex:0] isEqualToString:@"-a"] && argsAry.count > 1) {
-        for (IRCClient *cl in self.worldController.clients) {
-            [cl sendCommand:cmd];
-        }
-    } else if([[argsAry objectAtIndex:0] length] == 5 && argsAry.count > 1) {
-        for (IRCClient *cl in self.worldController.clients) {
-            if([cl.uniqueIdentifier hasPrefix:[argsAry objectAtIndex:0]]) {
+        for (IRCClient *cl in self.worldController.clientList) {
+            if([argsAry[1] hasPrefix:@"#"]) {
+                IRCChannel *ch = [cl findChannel:argsAry[3]];
+                if(ch != nil)
+                    [cl sendCommand:cmd completeTarget:YES target:ch.name];
+                else
+                    [client sendCommand:[NSString stringWithFormat:@"DEBUG channel %@ not found", argsAry[1]]];
+            } else {
                 [cl sendCommand:cmd];
             }
         }
+    } else if([[argsAry objectAtIndex:0] length] > 4 && argsAry.count > 1) {
+        BOOL found = NO;
+        for (IRCClient *cl in self.worldController.clientList) {
+            if([cl.uniqueIdentifier hasPrefix:[argsAry objectAtIndex:0]]) {
+                if([argsAry[1] hasPrefix:@"#"]) {
+                    cmd = [[argsAry subarrayWithRange:NSMakeRange(2, argsAry.count-2)] componentsJoinedByString:@" "];
+                    IRCChannel *ch = [cl findChannel:argsAry[1]];
+                    if(ch != nil)
+                        [cl sendCommand:cmd completeTarget:YES target:ch.name];
+                    else
+                        [client sendCommand:[NSString stringWithFormat:@"DEBUG channel %@ not found", argsAry[1]]];
+                } else {
+                    [cl sendCommand:cmd];
+                }
+                found = YES;
+                break;
+            }
+        }
+        if(!found)
+            [client sendCommand:[NSString stringWithFormat:@"DEBUG client id %@ not found", argsAry[0]]];
     } else {
-        [client sendCommand:@"DEBUG USAGE: /allconn <-a|ID> <command>"];
+        [client sendCommand:@"DEBUG USAGE: /allconn <-a|ID> [channel] <command>"];
     }
 }
 
-- (NSArray *)pluginSupportsUserInputCommands
+- (NSArray *)subscribedUserInputCommands
 {
 	return @[@"allconn"];
 }
